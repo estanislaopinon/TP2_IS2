@@ -9,8 +9,8 @@ def chat_with_chatgpt(userquery):
    context=" "
 
    usertask=" "
-
-   response = client.chat.completions.create(
+   try:
+      response = client.chat.completions.create(
       model="gpt-3.5-turbo-0125",
       messages=[
          {
@@ -28,22 +28,31 @@ def chat_with_chatgpt(userquery):
       top_p=1,
       frequency_penalty=0,
       presence_penalty=0
-   )
-   return response.choices[0].message.content
+      )
+      return response.choices[0].message.content
+   
+   except Exception as e:
+      print(f"Error en la solicitud: {e}")
+
+   
 
 def main():
 
    while True:
+      try:
+         userquery= input("Ingrese la Consulta: ")
+         if userquery.strip()== "":
+            print("Ingrese una contraseña valida")
+            continue
 
-      userquery= input("Ingrese la Consulta: ")
-      if userquery.strip()== "":
-         print("Ingrese una contraseña valida")
-         continue
+         print("YOU: ", userquery)
 
-      print("YOU: ", userquery)
-
-      answer = chat_with_chatgpt(userquery)
-      print("chatGPT: ", answer)
+         answer = chat_with_chatgpt(userquery)
+         print("chatGPT: ", answer)
+      except KeyboardInterrupt:
+         print("\nSaliendo del programa")
+      except Exception as e:
+         print(f"Se ha producido un error: {e}")
 
 
 main()
