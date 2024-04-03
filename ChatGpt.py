@@ -4,13 +4,12 @@ from openai import OpenAI
 client= OpenAI()#Inicialización del cliente de OpenAI
 interaction_history=[]# Buffer que almacena las consultas y respuestas
 
-def chat_with_chatgpt(userquery, conversation ):#Función para interactuar con el modelo de chat de OpenAI y obtener respuestas
-    
+#Función para interactuar con el modelo de chat de OpenAI y obtener respuestas
+def chat_with_chatgpt(userquery, conversation ):
    #userquery: consulta del usuario
    #conversation: indica si se esta utilizando el modo de conversacion
-   context=" ".join(interaction_history) if conversation else ""
-
-   usertask=" "
+   context = " ".join(interaction_history) if conversation else ""
+   usertask = " "
    try:
       #Realiza una solicitud al modelo de chat de OpenAI para obtener la respuesta
       response = client.chat.completions.create(
@@ -37,7 +36,12 @@ def chat_with_chatgpt(userquery, conversation ):#Función para interactuar con e
       #En caso de error, devuelve un mensaje de error
       return f"Error en la solicitud: {e}"
 
-   
+def get_user_query():# Función responsable de solicitar al usuario una consulta y asegurarse de que esta sea valida
+   while True:
+      user_query= input("Ingrese la Consulta: ")
+      if user_query.strip() != "":
+            return user_query
+      print("Ingrese una consulta válida")  
 
 def main():#Funcion principal del programa
    #Configuracion del parser de argumentospara aceptar el argumento "--convers"
@@ -45,34 +49,28 @@ def main():#Funcion principal del programa
    parser.add_argument('--convers', action='store_true', help='Activar el modo de conversación ')
    args = parser.parse_args()
    
+   print("Modo de conversación" ,("activado" if args.convers else "desactivado"))#Imprime el estado del modo de conversación
    while True:
-      #Imprime el estado del modo de conversación
-      print("Modo de conversación" ,("activado" if args.convers else "desactivado"))
-      
-      while True:
-         try:
-            userquery= input("Ingrese la Consulta: ")
-            if userquery.strip()== "":#En caso de que el usuario no haya ingresado una consulta, se le pide que ingrese una consulta valida
-               print("Ingrese una consulta valida")
-               continue
+      try:
+         user_query= get_user_query()
 
-            print("YOU: ", userquery)
+         print("YOU: ", user_query)
 
-            interaction_history.append(userquery)#Agrego la consulta a interaction_history
+         interaction_history.append(user_query)#Agrego la consulta a interaction_history
 
-            lastquery= interaction_history[-1]#Obtengo la ultima consulta realizada y la almaceno en una variable
+         lastquery= interaction_history[-1]#Obtengo la ultima consulta realizada y la almaceno en una variable
 
-            answer=chat_with_chatgpt(lastquery, 1 if args.convers else 0)#Realiza la interacción con chatGPT utilizando la ultima consulta
+         answer=chat_with_chatgpt(lastquery, 1 if args.convers else 0)#Realiza la interacción con chatGPT utilizando la ultima consulta
 
-            #Almaceno la respuesta en el buffer
-            interaction_history.append(answer)
-            #Se imprime la respuesta
-            print("chatGPT: ", answer)
-         except KeyboardInterrupt:# Interrupción del teclado (Ctrl+C) para salir del bucle de conversación
-            print("\nSaliendo del programa")
-            break
-         except Exception as e:#Cualquier error que pueda ocurrir durante la interacción con chatGPT, se informa que se produjo un error
-            print(f"Se ha producido un error: {e}")
+         #Almaceno la respuesta en el buffer
+         interaction_history.append(answer)
+         #Se imprime la respuesta
+         print("chatGPT: ", answer)
+      except KeyboardInterrupt:# Interrupción del teclado (Ctrl+C) para salir del bucle de conversación
+         print("\nSaliendo del programa")
+         break
+      except Exception as e:#Cualquier error que pueda ocurrir durante la interacción con chatGPT, se informa que se produjo un error
+         print(f"Se ha producido un error: {e}")
       
 
 
