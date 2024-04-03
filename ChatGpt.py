@@ -4,9 +4,9 @@ from openai import OpenAI
 client= OpenAI()
 interaction_history=[]# Buffer que almacena las consultas y respuestas
 
-def chat_with_chatgpt(userquery):
+def chat_with_chatgpt(userquery, conversation ):
     
-   context=" "
+   context=" ".join(interaction_history) if conversation else ""
 
    usertask=" "
    try:
@@ -23,8 +23,12 @@ def chat_with_chatgpt(userquery):
          frequency_penalty=0,
          presence_penalty=0
       )
+      if conversation:
+         interaction_history.append(userquery)
+         interaction_history.append(response.choices[0].message.content)
+
       return response.choices[0].message.content
-   
+      
    except Exception as e:
       return f"Error en la solicitud: {e}"
 
@@ -35,8 +39,8 @@ def main():
    parser.add_argument('--convers', action='store_true', help='Activar el modo de conversación ')
    args = parser.parse_args()
    
-   if args.convers:
-      print("Modo de conversación ativado.")
+   while True:
+      print("Modo de conversación" ,("activado" if args.convers else "desactivado"))
       
       while True:
          try:
@@ -51,7 +55,7 @@ def main():
 
             lastquery= interaction_history[-1]#Obtengo la ultima consulta realizada y la almaceno en una variable
 
-            answer=chat_with_chatgpt(lastquery)#Realiza la interacción con chatGPT utilizando la ultima consulta
+            answer=chat_with_chatgpt(lastquery, 1 if args.convers else 0)#Realiza la interacción con chatGPT utilizando la ultima consulta
 
             #Almaceno la respuesta en el buffer
             interaction_history.append(answer)
@@ -62,7 +66,6 @@ def main():
          except Exception as e:
             print(f"Se ha producido un error: {e}")
       
-   else:print("Modo de conversacion desactivado.")
 
 
 if __name__=="__main__":
